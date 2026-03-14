@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Ethisch Keuzespel – Prompt</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,500;0,700;1,300&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --c1: #ff6b6b;
+      --c2: #f9ca24;
+      --c3: #6c5ce7;
+      --c4: #00cec9;
+      --c5: #fd79a8;
+      --c6: #0984e3;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+      background: #0a0a1a;
+    }
+
+    /* ── animated canvas background ── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.55;
+      will-change: transform;
+    }
+
+    .blob-1 {
+      width: 600px; height: 600px;
+      background: var(--c3);
+      top: -150px; left: -150px;
+      animation: drift1 14s ease-in-out infinite alternate;
+    }
+    .blob-2 {
+      width: 500px; height: 500px;
+      background: var(--c6);
+      bottom: -100px; right: -100px;
+      animation: drift2 17s ease-in-out infinite alternate;
+    }
+    .blob-3 {
+      width: 350px; height: 350px;
+      background: var(--c5);
+      top: 40%; left: 55%;
+      animation: drift3 11s ease-in-out infinite alternate;
+    }
+    .blob-4 {
+      width: 280px; height: 280px;
+      background: var(--c4);
+      top: 20%; left: 20%;
+      animation: drift4 13s ease-in-out infinite alternate;
+    }
+    .blob-5 {
+      width: 200px; height: 200px;
+      background: var(--c2);
+      bottom: 25%; left: 10%;
+      animation: drift5 9s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift1 { to { transform: translate(120px, 180px) scale(1.15); } }
+    @keyframes drift2 { to { transform: translate(-140px, -100px) scale(1.2); } }
+    @keyframes drift3 { to { transform: translate(-80px, 90px) scale(0.85); } }
+    @keyframes drift4 { to { transform: translate(60px, -70px) scale(1.1); } }
+    @keyframes drift5 { to { transform: translate(90px, -60px) scale(1.25); } }
+
+    /* ── floating particles ── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0;
+      animation: float-up linear infinite;
+    }
+    @keyframes float-up {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 0.7; }
+      90%  { opacity: 0.4; }
+      100% { transform: translateY(-20px) scale(1.2); opacity: 0; }
+    }
+
+    /* ── card ── */
+    .card {
+      position: relative;
+      z-index: 10;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      max-width: 680px;
+      width: 100%;
+      padding: 2.8rem 3rem 2.4rem;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05) inset,
+        0 40px 80px rgba(0,0,0,0.5);
+      animation: card-in 0.7s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(32px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ── badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(108,92,231,0.35);
+      border: 1px solid rgba(108,92,231,0.6);
+      border-radius: 100px;
+      padding: 4px 14px 4px 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #d4cfff;
+      letter-spacing: 0.04em;
+      margin-bottom: 1.2rem;
+      animation: card-in 0.7s 0.1s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .badge .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #a29bfe;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.4rem;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      animation: card-in 0.7s 0.15s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    h1 span {
+      background: linear-gradient(90deg, #a29bfe, #fd79a8, #f9ca24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.9rem;
+      font-weight: 300;
+      margin-bottom: 2rem;
+      animation: card-in 0.7s 0.2s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    /* ── prompt box ── */
+    .prompt-wrap {
+      position: relative;
+      animation: card-in 0.7s 0.25s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .prompt-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(108,92,231,0.6), rgba(253,121,168,0.4), rgba(0,206,201,0.4));
+      z-index: 0;
+    }
+    .prompt-box {
+      position: relative;
+      z-index: 1;
+      background: rgba(10,10,26,0.75);
+      border-radius: 11px;
+      padding: 1.5rem 1.7rem;
+      font-size: 0.93rem;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.82);
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'DM Sans', monospace;
+    }
+
+    /* highlighted inline */
+    .hl {
+      color: #a29bfe;
+      font-weight: 500;
+    }
+    .hl-y { color: #f9ca24; font-weight: 500; }
+    .hl-p { color: #fd79a8; font-weight: 500; }
+
+    /* ── actions row ── */
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.6rem;
+      animation: card-in 0.7s 0.3s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    .hint {
+      color: rgba(255,255,255,0.3);
+      font-size: 0.78rem;
+    }
+
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.65rem 1.6rem;
+      border-radius: 10px;
+      border: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s, box-shadow 0.15s;
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(108,92,231,0.45);
+      letter-spacing: 0.02em;
+    }
+    .copy-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(108,92,231,0.55); }
+    .copy-btn:hover::after { background: rgba(255,255,255,0.08); }
+    .copy-btn:active { transform: translateY(0); }
+    .copy-btn.copied {
+      background: linear-gradient(135deg, #00b894, #00cec9);
+      box-shadow: 0 4px 20px rgba(0,206,201,0.45);
+    }
+
+    /* ── divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+      margin: 2rem 0 1.6rem;
+      animation: card-in 0.7s 0.28s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    /* ── step pills ── */
+    .steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      animation: card-in 0.7s 0.35s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .step-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 100px;
+      padding: 5px 12px;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+    }
+    .step-pill .num {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: rgba(108,92,231,0.4);
+      color: #a29bfe;
+      font-weight: 700;
+      font-size: 0.65rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- animated background blobs -->
+  <div class="bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="blob blob-5"></div>
+  </div>
+
+  <!-- floating particles (JS-generated) -->
+  <div class="particles" id="particles"></div>
+
+  <div class="card">
+    <div class="badge"><span class="dot"></span> BUas · AI Ethics</div>
+    <h1>🎯 <span>AI Ethisch</span> Keuzespel</h1>
+    <p class="subtitle">Kopieer de prompt hieronder en plak hem in jouw AI-tool naar keuze.</p>
+
+    <div class="prompt-wrap">
+      <div class="prompt-box" id="prompt">Je bent gespreksleider van een ethisch keuzespel over AI. Volg onderstaande instructies exact op.
+
+<span class="hl-y">Mijn rol:</span> [VOER JE BAAN IN, bijv. "AI-instructeur"]
+
+<span class="hl">Spelregels:</span>
+<span class="hl-p">1.</span> Presenteer precies 5 dilemma's, één tegelijk.
+<span class="hl-p">2.</span> Elk dilemma bevat:
+   · Een titel
+   · Een concrete situatieschets van 3–5 zinnen, specifiek voor mijn baan
+   · Exact 4 keuzes gelabeld A, B, C, D
+<span class="hl-p">3.</span> Wacht na elke vraag op mijn antwoord. Ga NIET verder zonder reactie.
+<span class="hl-p">4.</span> Geef na mijn keuze altijd:
+   · Een neutrale reflectie: welke waarden of belangen spelen mee?
+   · Welke spanningen of trade-offs brengt deze keuze met zich mee?
+   · Eventueel: wat laten de andere opties zien wat deze keuze niet doet?
+<span class="hl-p">5.</span> Sluit af met een korte reflectie op terugkerende thema's in mijn keuzes, zonder oordeel.
+
+Start nu met dilemma 1. Stel nog geen vragen — begin direct.</div>
+    </div>
+
+    <div class="actions">
+      <p class="hint">⚠ Vervang [VOER JE BAAN IN] door je eigen functie</p>
+      <button class="copy-btn" onclick="copyPrompt(this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Kopieer prompt
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="steps">
+      <div class="step-pill"><span class="num">1</span> Kopieer de prompt</div>
+      <div class="step-pill"><span class="num">2</span> Plak in jouw AI-tool</div>
+      <div class="step-pill"><span class="num">3</span> Vul je functie in</div>
+      <div class="step-pill"><span class="num">4</span> Begin het gesprek</div>
+    </div>
+  </div>
+
+  <script>
+    /* ── particles ── */
+    const container = document.getElementById('particles');
+    const colors = ['#a29bfe','#fd79a8','#f9ca24','#00cec9','#6c5ce7','#0984e3'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 5 + 3;
+      p.style.cssText = `
+        width:${size}px; height:${size}px;
+        left:${Math.random()*100}%;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        animation-duration:${Math.random()*14+8}s;
+        animation-delay:${Math.random()*10}s;
+      `;
+      container.appendChild(p);
+    }
+
+    /* ── copy ── */
+    function copyPrompt(btn) {
+      const el = document.getElementById('prompt');
+      const text = el.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Gekopieerd!`;
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopieer prompt`;
+          btn.classList.remove('copied');
+        }, 2500);
+      });
+    }
+  </script>
+</body>
+</html>
